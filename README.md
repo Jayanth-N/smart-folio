@@ -1,25 +1,30 @@
 # Smart Folio
 
-A simple single-page stock portfolio tracker. Add stocks with your rationale and track them in a clean table.
+A simple single-page portfolio allocation tracker with a beautiful pie chart visualization.
 
 ## Features
 
-- Add stocks with symbol, company name, quantity, price, and rationale
-- View all stocks in a table with calculated values
-- Delete stocks from your portfolio
-- Total portfolio value calculation
+- Add stocks with symbol, company name, percentage allocation, and rationale
+- Interactive doughnut chart showing portfolio allocation
+- Unallocated portion automatically calculated and displayed
+- Prevents allocation from exceeding 100%
+- Dark themed modern UI
 
 ## Quick Start
 
 ```bash
-# Install Flask
 pip install flask
-
-# Run the app
 python app.py
 ```
 
-Open http://localhost:5000 in your browser.
+Open http://localhost:5001
+
+## Screenshot
+
+The app shows:
+- **Pie Chart**: Visual breakdown of your portfolio allocation
+- **Add Form**: Enter stock details with percentage allocation
+- **Holdings Table**: List of all stocks with rationale
 
 ## Project Structure
 
@@ -27,10 +32,9 @@ Open http://localhost:5000 in your browser.
 smart-folio/
 ├── app.py              # Flask application
 ├── templates/
-│   └── index.html      # Single page UI
+│   └── index.html      # Single page UI with Chart.js
 ├── portfolio.db        # SQLite database (auto-created)
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
 
 ## License
