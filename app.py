@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
-import os
 
 app = Flask(__name__)
 DB_PATH = 'portfolio.db'
@@ -10,13 +9,13 @@ def init_db():
     """Initialize the database with the stocks table."""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS stocks')
     c.execute('''
-        CREATE TABLE IF NOT EXISTS stocks (
+        CREATE TABLE stocks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             symbol TEXT NOT NULL,
             company TEXT,
-            quantity REAL,
-            price REAL,
+            percentage REAL NOT NULL,
             rationale TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -34,11 +33,15 @@ def get_db():
 
 @app.route('/')
 def index():
-    """Main page - show all stocks and add form."""
+    """Main page - show all stocks and pie chart."""
     conn = get_db()
-    stocks = conn.execute('SELECT * FROM stocks ORDER BY created_at DESC').fetchall()
+    stocks = conn.execute('SELECT * FROM stocks ORDER BY percentage DESC').fetchall()
+    total_allocated = conn.execute('SELECT COALESCE(SUM(percentage), 0) as total FROM stocks').fetchone()['total']
     conn.close()
-    return render_template('index.html', stocks=stocks)
+
+    unallocated = max(0, 100 - total_allocated)
+
+    return render_template('index.html', stocks=stocks, total_allocated=total_allocated, unallocated=unallocated)
 
 
 @app.route('/add', methods=['POST'])
@@ -46,17 +49,19 @@ def add_stock():
     """Add a new stock entry."""
     symbol = request.form.get('symbol', '').upper().strip()
     company = request.form.get('company', '').strip()
-    quantity = request.form.get('quantity', type=float)
-    price = request.form.get('price', type=float)
+    percentage = request.form.get('percentage', type=float) or 0
     rationale = request.form.get('rationale', '').strip()
 
-    if symbol:
+    if symbol and percentage > 0:
         conn = get_db()
-        conn.execute(
-            'INSERT INTO stocks (symbol, company, quantity, price, rationale) VALUES (?, ?, ?, ?, ?)',
-            (symbol, company, quantity, price, rationale)
-        )
-        conn.commit()
+        # Check total won't exceed 100%
+        current_total = conn.execute('SELECT COALESCE(SUM(percentage), 0) as total FROM stocks').fetchone()['total']
+        if current_total + percentage <= 100:
+            conn.execute(
+                'INSERT INTO stocks (symbol, company, percentage, rationale) VALUES (?, ?, ?, ?)',
+                (symbol, company, percentage, rationale)
+            )
+            conn.commit()
         conn.close()
 
     return redirect(url_for('index'))

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Folio - My Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,68 +14,100 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             padding: 40px 20px;
+            color: #fff;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 30px;
             text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 24px;
-            margin-bottom: 24px;
         }
 
         h2 {
-            color: #444;
+            color: #fff;
             margin-bottom: 20px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin-bottom: 16px;
+        .chart-container {
+            position: relative;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
+            margin-bottom: 16px;
         }
 
         label {
+            display: block;
             font-size: 0.85rem;
-            color: #666;
+            color: #aaa;
             margin-bottom: 6px;
         }
 
         input, textarea {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #fff;
             font-size: 1rem;
+            transition: all 0.2s;
         }
 
         input:focus, textarea:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #666;
         }
 
         textarea {
@@ -82,19 +115,28 @@
             min-height: 80px;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
         button {
-            background: #4f46e5;
+            width: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
+            padding: 14px 24px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         button:hover {
-            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
         }
 
         table {
@@ -103,132 +145,183 @@
         }
 
         th, td {
-            padding: 12px;
+            padding: 14px 12px;
             text-align: left;
-            border-bottom: 1px solid #eee;
         }
 
         th {
-            background: #f9f9f9;
-            font-weight: 600;
-            color: #555;
-            font-size: 0.85rem;
+            color: #888;
+            font-weight: 500;
+            font-size: 0.8rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         td {
-            color: #333;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .symbol {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .percentage {
             font-weight: 600;
-            color: #4f46e5;
+            color: #4ade80;
         }
 
         .rationale {
-            max-width: 300px;
+            color: #aaa;
             font-size: 0.9rem;
-            color: #666;
+            max-width: 250px;
         }
 
         .delete-btn {
-            background: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
             padding: 6px 12px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            width: auto;
         }
 
         .delete-btn:hover {
-            background: #dc2626;
+            background: rgba(239, 68, 68, 0.4);
+            transform: none;
+            box-shadow: none;
         }
 
         .empty {
             text-align: center;
-            color: #999;
+            color: #666;
             padding: 40px;
         }
 
-        .total-row {
-            font-weight: 600;
-            background: #f9f9f9;
+        .allocation-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .allocation-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .allocation-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Smart Folio</h1>
+        <p class="subtitle">Portfolio Allocation Tracker</p>
 
-        <!-- Add Stock Form -->
-        <div class="card">
-            <h2>Add Stock</h2>
-            <form action="/add" method="POST">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="symbol">Symbol *</label>
-                        <input type="text" id="symbol" name="symbol" placeholder="AAPL" required>
+        <div class="grid">
+            <!-- Pie Chart -->
+            <div class="card">
+                <h2>Allocation</h2>
+                <div class="chart-container">
+                    <canvas id="portfolioChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Add Stock Form -->
+            <div class="card">
+                <h2>Add Stock</h2>
+
+                <div class="allocation-bar">
+                    <div class="allocation-fill" style="width: {{ total_allocated }}%"></div>
+                </div>
+                <div class="allocation-text">
+                    <span>Allocated: {{ "%.1f"|format(total_allocated) }}%</span>
+                    <span>Available: {{ "%.1f"|format(unallocated) }}%</span>
+                </div>
+
+                <form action="/add" method="POST" style="margin-top: 20px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="symbol">Symbol *</label>
+                            <input type="text" id="symbol" name="symbol" placeholder="AAPL" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="percentage">Allocation % *</label>
+                            <input type="number" id="percentage" name="percentage" placeholder="10" min="0.1" max="{{ unallocated }}" step="0.1" required>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="company">Company</label>
                         <input type="text" id="company" name="company" placeholder="Apple Inc.">
                     </div>
                     <div class="form-group">
-                        <label for="quantity">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" placeholder="100" step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <label for="price">Price ($)</label>
-                        <input type="number" id="price" name="price" placeholder="150.00" step="0.01">
-                    </div>
-                    <div class="form-group full-width">
                         <label for="rationale">Rationale</label>
                         <textarea id="rationale" name="rationale" placeholder="Why I'm investing in this stock..."></textarea>
                     </div>
-                </div>
-                <button type="submit">Add to Portfolio</button>
-            </form>
+                    <button type="submit" {% if unallocated <= 0 %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                        Add to Portfolio
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Portfolio Table -->
         <div class="card">
-            <h2>My Portfolio</h2>
+            <h2>Holdings</h2>
             {% if stocks %}
             <table>
                 <thead>
                     <tr>
                         <th>Symbol</th>
                         <th>Company</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Value</th>
+                        <th>Allocation</th>
                         <th>Rationale</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% set total = namespace(value=0) %}
                     {% for stock in stocks %}
-                    {% set value = (stock['quantity'] or 0) * (stock['price'] or 0) %}
-                    {% set total.value = total.value + value %}
                     <tr>
                         <td class="symbol">{{ stock['symbol'] }}</td>
                         <td>{{ stock['company'] or '-' }}</td>
-                        <td>{{ stock['quantity'] if stock['quantity'] else '-' }}</td>
-                        <td>{{ '$%.2f'|format(stock['price']) if stock['price'] else '-' }}</td>
-                        <td>{{ '$%.2f'|format(value) if value else '-' }}</td>
+                        <td class="percentage">{{ "%.1f"|format(stock['percentage']) }}%</td>
                         <td class="rationale">{{ stock['rationale'] or '-' }}</td>
                         <td>
                             <form action="/delete/{{ stock['id'] }}" method="POST" style="display:inline;">
-                                <button type="submit" class="delete-btn" onclick="return confirm('Delete this stock?')">Delete</button>
+                                <button type="submit" class="delete-btn" onclick="return confirm('Delete {{ stock['symbol'] }}?')">Delete</button>
                             </form>
                         </td>
                     </tr>
                     {% endfor %}
-                    {% if total.value > 0 %}
-                    <tr class="total-row">
-                        <td colspan="4">Total Portfolio Value</td>
-                        <td>${{ '%.2f'|format(total.value) }}</td>
-                        <td colspan="2"></td>
-                    </tr>
-                    {% endif %}
                 </tbody>
             </table>
             {% else %}
@@ -236,5 +329,72 @@
             {% endif %}
         </div>
     </div>
+
+    <script>
+        const colors = [
+            '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
+            '#00f2fe', '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f',
+            '#a8edea', '#fed6e3', '#d299c2', '#fef9d7', '#89f7fe'
+        ];
+
+        const stockData = [
+            {% for stock in stocks %}
+            { label: '{{ stock["symbol"] }}', value: {{ stock["percentage"] }} },
+            {% endfor %}
+        ];
+
+        {% if unallocated > 0 %}
+        stockData.push({ label: 'Unallocated', value: {{ unallocated }} });
+        {% endif %}
+
+        const labels = stockData.map(d => d.label);
+        const data = stockData.map(d => d.value);
+        const backgroundColors = stockData.map((d, i) =>
+            d.label === 'Unallocated' ? 'rgba(255, 255, 255, 0.1)' : colors[i % colors.length]
+        );
+
+        const ctx = document.getElementById('portfolioChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: 'rgba(0, 0, 0, 0.2)',
+                    borderWidth: 2,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#aaa',
+                            padding: 15,
+                            usePointStyle: true,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
